@@ -60,6 +60,18 @@ namespace Dashline
                     if (ix * ix + iy * iy >= 1f) Px(x, y, c);
                 }
         }
+        public void Outline(Color c)
+        {
+            var src = (Color[])b.Clone();
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    if (src[y * w + x].a > .01f) continue;
+                    bool n = (x > 0 && src[y * w + x - 1].a > .5f) || (x < w - 1 && src[y * w + x + 1].a > .5f) || (y > 0 && src[(y - 1) * w + x].a > .5f) || (y < h - 1 && src[(y + 1) * w + x].a > .5f);
+                    if (n) b[y * w + x] = c;
+                }
+        }
+        public void WhiteFill() { for (int i = 0; i < b.Length; i++) if (b[i].a > 0f) b[i] = new Color(1f, 1f, 1f, b[i].a); }
         public Sprite ToSprite(Vector2 pivot01)
         {
             var t = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
@@ -160,6 +172,54 @@ namespace Dashline
             p.Ellipse(11, 17, 9, 15, 2, Hex("#ffd34d"));
             return p.ToSprite(new Vector2(.5f, .5f));
         }
+        public static Sprite SwordSprite()
+        {
+            var p = new Pix(12, 4);
+            Color gold = Hex("#d9a43a"), blade = Hex("#dfe6ff");
+            p.Rect(0, 1, 2, 2, gold); p.Rect(3, 0, 1, 4, gold); p.Rect(4, 1, 8, 2, blade); p.Rect(4, 1, 8, 1, Color.white);
+            return p.ToSprite(new Vector2(2f / 12f, .5f));
+        }
+        public static Sprite GunSprite() { return GunSprite(0); }
+        public static Sprite GunSprite(int kind)
+        {
+            Color st = Hex("#c8ccd8"), dk = Hex("#6a6e82"), br = Hex("#7a4a28"), gd = Hex("#ffd34d"), cy = Hex("#6aeaff"), bk = Hex("#2a2c3a");
+            Pix p;
+            switch (kind)
+            {
+                case 1: // revolver: long barrel, gold cylinder
+                    p = new Pix(14, 7);
+                    p.Rect(5, 1, 9, 2, st); p.Rect(5, 1, 9, 1, Color.white); p.Rect(5, 3, 7, 1, dk); p.Rect(13, 0, 1, 1, dk);
+                    p.Rect(3, 0, 3, 4, gd); p.Rect(4, 1, 1, 2, bk); p.Rect(3, 0, 3, 1, Color.white);
+                    p.Rect(0, 2, 3, 3, br); p.Rect(0, 4, 3, 3, br); p.Rect(1, 3, 1, 3, Hex("#a06a38"));
+                    return p.ToSprite(new Vector2(.15f, .45f));
+                case 2: // shotgun: twin tube, pump, stock
+                    p = new Pix(18, 6);
+                    p.Rect(6, 1, 12, 1, st); p.Rect(6, 1, 12, 1, Color.white); p.Rect(6, 2, 12, 1, dk); p.Rect(17, 1, 1, 2, bk);
+                    p.Rect(9, 3, 5, 2, br); p.Rect(9, 3, 5, 1, Hex("#a06a38"));
+                    p.Rect(4, 0, 4, 4, bk); p.Rect(5, 1, 2, 1, gd);
+                    p.Rect(0, 2, 5, 3, br); p.Rect(0, 3, 2, 3, br); p.Rect(1, 2, 3, 1, Hex("#a06a38"));
+                    return p.ToSprite(new Vector2(.15f, .4f));
+                case 3: // railcannon: coils and a glowing barrel
+                    p = new Pix(20, 8);
+                    p.Rect(3, 2, 10, 4, dk); p.Rect(3, 2, 10, 1, st);
+                    p.Rect(4, 1, 1, 6, cy); p.Rect(7, 1, 1, 6, cy); p.Rect(10, 1, 1, 6, cy);
+                    p.Rect(13, 3, 7, 2, st); p.Rect(13, 3, 7, 1, Color.white); p.Rect(13, 4, 7, 1, cy);
+                    p.Rect(0, 3, 3, 5, br); p.Rect(2, 5, 3, 3, bk);
+                    return p.ToSprite(new Vector2(.12f, .45f));
+                case 4: // SMG: boxy body, long mag
+                    p = new Pix(13, 9);
+                    p.Rect(2, 1, 9, 3, st); p.Rect(2, 1, 9, 1, Color.white); p.Rect(10, 2, 3, 1, dk); p.Rect(4, 0, 4, 1, dk);
+                    p.Rect(6, 4, 2, 5, bk); p.Rect(6, 4, 2, 1, gd);
+                    p.Rect(2, 4, 2, 4, br); p.Rect(0, 2, 3, 2, br);
+                    return p.ToSprite(new Vector2(.15f, .3f));
+            }
+            p = new Pix(11, 6);
+            p.Rect(3, 1, 8, 2, st); p.Rect(3, 1, 8, 1, Color.white); p.Rect(10, 1, 1, 2, dk);
+            p.Rect(2, 0, 3, 4, gd); p.Rect(3, 1, 1, 2, dk);
+            p.Rect(0, 2, 3, 3, br); p.Rect(0, 4, 2, 2, br);
+            p.Rect(4, 3, 2, 1, dk);
+            return p.ToSprite(new Vector2(.2f, .5f));
+        }
         public static Sprite RingSprite()
         {
             var p = new Pix(32, 32);
@@ -251,17 +311,17 @@ namespace Dashline
         }
 
         // ---------------- the big static tile layer ----------------
-        public static Sprite TileLayer(Level lv)
+        public static Sprite TileChunk(World lv, Theme th, int chunk)
         {
-            Theme th = lv.th;
-            var p = new Pix(lv.cols * T, H);
+            var p = new Pix(Data.CW * T, H);
             Color t0 = Hex(th.tile[0]), t1 = Hex(th.tile[1]), t2 = Hex(th.tile[2]), t3 = Hex(th.tile[3]);
             Color spike = Hex(th.spike);
             for (int y = 0; y < ROWS; y++)
-                for (int x = 0; x < lv.cols; x++)
+                for (int cx = 0; cx < Data.CW; cx++)
                 {
-                    char ch = lv.map[y][x];
-                    int X = x * T, Y = y * T;
+                    int x = chunk * Data.CW + cx;
+                    char ch = lv.map[x][y];
+                    int X = cx * T, Y = y * T;
                     if (ch == '#')
                     {
                         float r = Hash(x, y, 1);
@@ -274,7 +334,7 @@ namespace Dashline
                         }
                         p.Rect(X, Y + T - 1, T, 1, C(0, 0, 0, .12f));
                         p.Rect(X + ((y % 2 == 1) ? 3 : 7), Y, 1, T - 1, C(0, 0, 0, .12f));
-                        bool up = lv.Solid(x, y - 1), dn = lv.Solid(x, y + 1), lf = lv.Solid(x - 1, y), rt = lv.Solid(x + 1, y);
+                        bool up = lv.WallT(x, y - 1), dn = lv.WallT(x, y + 1), lf = lv.WallT(x - 1, y), rt = lv.WallT(x + 1, y);
                         if (up && dn && lf && rt) p.Rect(X, Y, T, T, C(0, 0, 0, .16f));
                         if (!up) { p.Rect(X, Y, T, 2, t1); p.Rect(X, Y, T, 1, C(255, 255, 255, .35f)); }
                         if (!dn) p.Rect(X, Y + T - 2, T, 2, t2);
@@ -302,6 +362,318 @@ namespace Dashline
                 }
             return p.ToSprite(new Vector2(0, 0));
         }
+
+        // ---------------- periodic parallax strips (endless) ----------------
+        public const int Period = 720;
+        public static Sprite MountainStrip(Theme th, int i)
+        {
+            float bas = MtL[i][1], amp = MtL[i][2], k = 6.2832f / Period;
+            var p = new Pix(Period + W, H);
+            Color col = Hex(th.mount[i]);
+            for (int x = 0; x < Period + W; x++)
+            {
+                float y = bas - (Mathf.Sin(x * k * (3 + i) + i * 2.1f) * amp * .6f + Mathf.Sin(x * k * (7 + i * 2) + i * 5.3f) * amp * .3f + Mathf.Abs(Mathf.Sin(x * k * (2 + i) + i)) * amp * .7f);
+                int yi = Mathf.Clamp(Mathf.RoundToInt(y), 0, H);
+                p.Rect(x, yi, 1, H - yi, col);
+            }
+            return p.ToSprite(new Vector2(0, 0));
+        }
+        public static Sprite StalStrip(Theme th, int k)
+        {
+            int step = 30 + k * 15;
+            var p = new Pix(Period + W, H);
+            Color col = Hex(th.mount[2 - k]);
+            for (int id = -1; id * step < Period + W + step; id++)
+            {
+                float x = id * step, hh = 14 + Hash(((id % (Period / step)) + Period / step) % (Period / step), k, 3) * 26;
+                p.Tri(x - 8, 0, x + 2, hh, x + 12, 0, col);
+            }
+            return p.ToSprite(new Vector2(0, 0));
+        }
+
+
+        // ---------------- humanoid skins: 16x22 frames, feet on the bottom row, facing right ----------------
+        public static Sprite[] SkinFrames(int sk)
+        {
+            var res = new Sprite[8];
+            for (int f = 0; f < 7; f++) res[f] = SkinFrame(sk, f, false);
+            res[7] = SkinFrame(sk, 5, true);
+            return res;
+        }
+        static void Limb(Pix p, float x0, float y0, float x1, float y1, int th, Color c)
+        {
+            int n = Mathf.Max(1, Mathf.CeilToInt(Mathf.Max(Mathf.Abs(x1 - x0), Mathf.Abs(y1 - y0)) * 2f));
+            for (int i = 0; i <= n; i++) { float t = i / (float)n; p.Rect(Mathf.RoundToInt(Mathf.Lerp(x0, x1, t)), Mathf.RoundToInt(Mathf.Lerp(y0, y1, t)), th, th, c); }
+        }
+        static Sprite SkinFrame(int sk, int pose, bool white)
+        {
+            var p = new Pix(16, 22);
+            Color skinT = C(244, 204, 170), skinD = C(206, 156, 124), eye = C(24, 20, 34), line = C(14, 10, 22);
+            Color top, topL, topD, pants, pantsD, boot, belt;
+            switch (sk)
+            {
+                case 1: top = C(176, 32, 44); topL = C(220, 70, 80); topD = C(112, 16, 28); pants = C(52, 40, 52); pantsD = C(34, 26, 36); boot = C(30, 22, 28); belt = C(244, 196, 74); break;
+                case 2: top = C(64, 142, 74); topL = C(100, 184, 98); topD = C(38, 92, 50); pants = C(116, 82, 48); pantsD = C(84, 58, 34); boot = C(72, 46, 28); belt = C(156, 104, 52); break;
+                case 3: top = C(232, 182, 62); topL = C(255, 238, 146); topD = C(162, 112, 32); pants = C(170, 122, 40); pantsD = C(124, 84, 26); boot = C(120, 84, 28); belt = C(122, 78, 20); break;
+                case 4: top = C(72, 112, 204); topL = C(124, 164, 244); topD = C(42, 72, 142); pants = C(60, 96, 180); pantsD = C(42, 72, 142); boot = C(60, 44, 40); belt = C(236, 236, 255); break;
+                case 5: top = C(64, 32, 114); topL = C(116, 64, 186); topD = C(32, 14, 62); pants = C(44, 22, 84); pantsD = C(28, 12, 56); boot = C(28, 12, 56); belt = C(255, 80, 220); break;
+                default: top = C(42, 50, 88); topL = C(66, 76, 124); topD = C(26, 30, 54); pants = C(30, 34, 62); pantsD = C(20, 22, 44); boot = C(18, 20, 34); belt = C(196, 52, 62); break;
+            }
+            int hy = 6, L = 0, bob = 0;
+            float bdx = 0, bl = 0, fdx = 0, fl = 0, badx = -1, bady = 5, fadx = 1, fady = 5;
+            switch (pose)
+            {
+                case 1: bdx = -3; bl = 0; fdx = 2; fl = 2; badx = 2; bady = 4; fadx = -2; fady = 4; break;
+                case 2: bdx = 2; bl = 3; fdx = -2; fl = 0; badx = -2; bady = 4; fadx = 2; fady = 4; bob = 1; break;
+                case 3: bdx = -1; bl = 2; fdx = 2; fl = 3; badx = -1; bady = -2; fadx = 2; fady = -3; break;
+                case 4: bdx = -2; bl = 1; fdx = 2; fl = 1; badx = -3; bady = -1; fadx = 3; fady = -2; break;
+                case 5: L = 2; bob = 1; bdx = -5; bl = 1; fdx = -3; fl = 2; badx = -5; bady = 1; fadx = -4; fady = 2; break;
+                case 6: bdx = 0; bl = 0; fdx = 1; fl = 1; badx = -1; bady = -4; fadx = 1; fady = -4; break;
+            }
+            bool ghost = sk == 5, robe = sk == 4;
+            int ty = hy + 5 + bob;     // torso top
+            int hipY = hy + 10;
+            // ---- back arm
+            Limb(p, 5 + L, ty + 1, 5 + L + badx, ty + 1 + bady, 2, topD);
+            p.Rect(5 + L + (int)badx, ty + 1 + (int)bady, 2, 2, skinD);
+            // ---- legs (back then front)
+            if (!ghost)
+            {
+                Limb(p, 5, hipY, 5 + bdx, 20 - bl, 2, pantsD); p.Rect((int)(5 + bdx), (int)(20 - bl), 3, 2, boot);
+            }
+            // ---- back accessories
+            switch (sk)
+            {
+                case 0: break;
+                case 1: Limb(p, 2 + L, ty + 7, 6 + L, ty - 3, 1, C(70, 70, 84)); p.Rect(6 + L, ty - 4, 2, 2, belt); break;
+                case 2:
+                    p.Rect(2 + L, ty - 1, 3, 8, C(120, 78, 40)); p.Rect(2 + L, ty - 3, 1, 2, Color.white); p.Rect(3 + L, ty - 4, 1, 3, Color.white); p.Rect(4 + L, ty - 3, 1, 2, Color.white);
+                    p.Rect(3 + L, ty, 4, 9, C(34, 86, 46)); break;
+                case 3: p.Rect(2 + L, ty, 4, 11, C(190, 36, 48)); p.Rect(2 + L, ty, 1, 11, C(130, 20, 32)); break;
+                case 4: p.Rect(3 + L, hy + 1, 3, 8, C(226, 232, 246)); break;
+                case 5: p.Disc(2 + L, ty + 2, 1.5f, C(255, 80, 220)); p.Disc(14 + L, ty + 6, 1.5f, C(150, 90, 255)); break;
+            }
+            // ---- torso
+            p.Rect(5 + L, ty, 6, 5, top);
+            p.Rect(5 + L, ty, 6, 1, topL); p.Rect(5 + L, ty + 1, 1, 4, topD); p.Rect(10 + L, ty + 1, 1, 4, topD);
+            p.Rect(5 + L, ty + 4, 6, 1, belt);
+            if (robe)
+            {
+                for (int r = 0; r < 6; r++) { int wd = 6 + r / 2; p.Rect(5 + L - r / 3 - (pose == 1 ? 0 : 0), hipY + r - 1 + bob / 2, wd + r / 3, 1, r == 0 ? topL : (r % 2 == 0 ? top : topD)); }
+            }
+            if (ghost)
+            {
+                for (int r = 0; r < 7; r++) { int wd = Mathf.Max(1, 6 - r); int off = Mathf.RoundToInt(Mathf.Sin(r * .9f + pose) * 1.2f); p.Rect(8 + L - wd / 2 + off, hipY - 1 + r + bob / 2, wd, 1, r % 2 == 0 ? top : topD); }
+            }
+            // ---- front leg
+            if (!ghost)
+            {
+                Limb(p, 8, hipY, 8 + fdx, 20 - fl, 2, pants); p.Rect((int)(8 + fdx), (int)(20 - fl), 3, 2, boot);
+                p.Rect((int)(8 + fdx) + 2, (int)(20 - fl), 1, 1, C(255, 255, 255, .25f));
+            }
+            // ---- head
+            int hx = 5 + L, hyb = hy + bob;
+            p.Rect(hx, hyb, 6, 5, skinT); p.Rect(hx, hyb + 4, 6, 1, skinD);
+            p.Rect(hx + 4, hyb + 2, 1, 2, eye); p.Rect(hx + 2, hyb + 2, 1, 2, eye);
+            p.Px(hx + 4, hyb + 2, C(255, 255, 255, .0f));
+            // ---- hair / headgear / face details per skin
+            switch (sk)
+            {
+                case 0: // ninja: hood + mask + headband with tails
+                    p.Rect(hx - 1, hyb - 1, 8, 6, top); p.Rect(hx - 1, hyb - 1, 8, 1, topL);
+                    p.Rect(hx + 1, hyb + 1, 5, 2, skinT); p.Rect(hx + 2, hyb + 1, 1, 2, eye); p.Rect(hx + 4, hyb + 1, 1, 2, eye);
+                    p.Rect(hx - 1, hyb + 3, 8, 2, topD);
+                    p.Rect(hx - 1, hyb, 8, 1, belt);
+                    { int w2 = (pose == 1 || pose == 2 || pose == 5) ? 1 : 0; p.Rect(hx - 5, hyb, 4, 1, belt); p.Rect(hx - 6, hyb + 1 + w2, 3, 1, belt); p.Rect(hx - 7, hyb + 2 + w2 * 2, 2, 1, C(150, 36, 48)); }
+                    break;
+                case 1: // samurai: kabuto with horns, face guard
+                    p.Rect(hx - 1, hyb - 1, 8, 2, C(30, 24, 34)); p.Rect(hx - 1, hyb + 1, 2, 3, C(30, 24, 34));
+                    p.Rect(hx, hyb - 3, 6, 3, top); p.Rect(hx, hyb - 3, 6, 1, topL); p.Rect(hx - 1, hyb, 8, 1, topD);
+                    p.Rect(hx - 1, hyb - 6, 1, 4, belt); p.Rect(hx + 6, hyb - 6, 1, 4, belt); p.Rect(hx + 2, hyb - 6, 2, 3, belt);
+                    p.Rect(hx + 1, hyb + 3, 5, 2, topD); p.Rect(hx + 1, hyb + 3, 5, 1, top);
+                    break;
+                case 2: // ranger: brown hair, green feathered hat
+                    p.Rect(hx - 1, hyb + 1, 2, 4, C(112, 70, 40)); p.Rect(hx, hyb, 6, 1, C(112, 70, 40));
+                    p.Rect(hx - 2, hyb - 1, 10, 1, topD); p.Rect(hx, hyb - 3, 6, 2, top); p.Rect(hx + 1, hyb - 5, 3, 2, top); p.Rect(hx, hyb - 3, 6, 1, topL);
+                    p.Rect(hx, hyb - 1, 6, 1, belt);
+                    Limb(p, hx + 4, hyb - 4, hx + 7, hyb - 8, 1, C(238, 70, 70)); p.Rect(hx + 7, hyb - 8, 1, 2, Color.white);
+                    break;
+                case 3: // knight: gold helm, visor, plume
+                    p.Rect(hx - 1, hyb - 1, 8, 6, top); p.Rect(hx - 1, hyb - 1, 8, 1, topL); p.Rect(hx + 5, hyb, 1, 5, topD); p.Rect(hx - 1, hyb, 1, 5, topD);
+                    p.Rect(hx + 2, hyb + 2, 5, 1, C(30, 22, 12)); p.Rect(hx + 2, hyb + 3, 5, 1, topD); p.Rect(hx + 4, hyb + 1, 1, 4, topD);
+                    p.Rect(hx + 1, hyb - 4, 3, 3, C(206, 44, 58)); p.Rect(hx - 3, hyb - 3 + (pose == 5 ? 1 : 0), 4, 2, C(150, 24, 36));
+                    break;
+                case 4: // mage: grey hair, hat, beard
+                    p.Rect(hx, hyb, 6, 1, C(226, 232, 246));
+                    p.Rect(hx - 2, hyb - 1, 10, 1, topD); p.Rect(hx, hyb - 3, 6, 2, top); p.Rect(hx + 1, hyb - 5, 4, 2, top); p.Rect(hx + 2, hyb - 7, 2, 2, top);
+                    p.Rect(hx + 4, hyb - 8, 2, 1, top); p.Px(hx + 3, hyb - 4, Color.white); p.Px(hx + 1, hyb - 2, C(200, 240, 255));
+                    p.Rect(hx + 3, hyb + 3, 3, 4, Color.white); p.Rect(hx + 3, hyb + 3, 1, 4, C(210, 218, 236));
+                    break;
+                case 5: // wraith: dark face, glowing eyes, horns
+                    p.Rect(hx - 1, hyb - 1, 8, 6, C(26, 10, 52)); p.Rect(hx - 1, hyb - 1, 8, 1, topL);
+                    p.Rect(hx + 1, hyb + 1, 5, 2, C(10, 4, 22)); p.Rect(hx + 2, hyb + 1, 1, 2, C(255, 80, 230)); p.Rect(hx + 4, hyb + 1, 1, 2, C(255, 80, 230));
+                    p.Rect(hx - 2, hyb - 4, 1, 4, C(150, 90, 255)); p.Rect(hx + 6, hyb - 4, 1, 4, C(150, 90, 255)); p.Rect(hx - 3, hyb - 5, 1, 2, C(150, 90, 255)); p.Rect(hx + 7, hyb - 5, 1, 2, C(150, 90, 255));
+                    break;
+            }
+            // ---- front arm (over torso)
+            Limb(p, 9 + L, ty + 1, 9 + L + fadx, ty + 1 + fady, 2, top);
+            p.Rect(9 + L + (int)fadx, ty + 1 + (int)fady, 2, 2, skinT);
+            // ---- front accessories
+            switch (sk)
+            {
+                case 1: p.Rect(9 + L, ty, 3, 3, top); p.Rect(9 + L, ty, 3, 1, belt); p.Rect(5 + L, ty + 4, 6, 1, belt); break;
+                case 2: p.Rect(5 + L, ty + 4, 6, 1, belt); p.Rect(7 + L, ty + 4, 2, 1, C(255, 214, 90)); break;
+                case 3: p.Rect(9 + L, ty - 1, 3, 3, top); p.Rect(9 + L, ty - 1, 3, 1, topL); p.Rect(10 + L, ty + 1, 1, 1, topD); break;
+                case 4: p.Rect(12 + L + (int)fadx - 1, hyb - 2, 1, 21 - hyb + 2 - (int)(fl), C(140, 100, 60)); p.Disc(12 + L + (int)fadx - .5f, hyb - 3, 2f, C(150, 236, 255)); p.Px(11 + L + (int)fadx, hyb - 4, Color.white); break;
+            }
+            if (white) p.WhiteFill();
+            p.Outline(line);
+            return p.ToSprite(new Vector2(.5f, 0f));
+        }
+
+        // ---------------- gates + bosses ----------------
+        public static Sprite GateSprite()
+        {
+            var p = new Pix(8, 112);
+            Color bar = Hex("#a01818"), hi = Hex("#ff5a4a"), dk = Hex("#400808");
+            p.Rect(0, 0, 8, 112, new Color(.6f, .05f, .05f, .35f));
+            for (int x = 0; x < 8; x += 3) { p.Rect(x, 0, 2, 112, bar); p.Rect(x, 0, 1, 112, hi); }
+            for (int y = 0; y < 112; y += 14) p.Rect(0, y, 8, 2, dk);
+            return p.ToSprite(new Vector2(0, 1));
+        }
+        public static Sprite BossSprite(int kind)
+        {
+            var p = new Pix(32, 32);
+            switch (kind)
+            {
+                case 0: // Minos corpse
+                    {
+                        Color sk = C(122, 130, 106), dk = C(70, 78, 62), lt = C(166, 176, 144), red = C(255, 50, 40);
+                        p.Rect(8, 22, 6, 10, dk); p.Rect(18, 22, 6, 10, dk); p.Rect(7, 30, 8, 2, sk); p.Rect(17, 30, 8, 2, sk);
+                        p.Rect(6, 8, 20, 15, sk); p.Rect(6, 8, 20, 2, lt);
+                        for (int i = 0; i < 4; i++) p.Rect(10, 12 + i * 3, 12, 1, dk);
+                        p.Rect(14, 14, 4, 5, C(150, 20, 20));
+                        p.Rect(1, 10, 5, 14, sk); p.Rect(26, 10, 5, 14, sk); p.Rect(0, 23, 6, 4, dk); p.Rect(26, 23, 6, 4, dk);
+                        p.Rect(10, 0, 12, 9, dk); p.Rect(12, 3, 2, 2, red); p.Rect(18, 3, 2, 2, red); p.Rect(12, 7, 8, 2, C(200, 200, 180));
+                        p.Rect(9, 0, 1, 3, lt); p.Rect(22, 0, 1, 3, lt);
+                        break;
+                    }
+                case 1: // Gabriel
+                    {
+                        Color gold = C(240, 200, 80), wh = C(250, 245, 230), bl = C(120, 170, 255), lt = C(255, 236, 170);
+                        p.Tri(14, 10, 0, 2, 3, 22, gold); p.Tri(18, 10, 32, 2, 29, 22, gold);
+                        p.Tri(14, 11, 4, 6, 6, 19, lt); p.Tri(18, 11, 28, 6, 26, 19, lt);
+                        p.Rect(12, 10, 8, 12, wh); p.Rect(12, 18, 8, 2, gold); p.Rect(12, 10, 8, 1, gold);
+                        p.Rect(13, 22, 6, 6, wh); p.Tri(13, 28, 19, 28, 16, 32, wh);
+                        p.Disc(16, 6, 4, C(250, 222, 192)); p.Ellipse(16, 2, 6, 2, 1, gold);
+                        p.Rect(14, 6, 1, 1, bl); p.Rect(17, 6, 1, 1, bl);
+                        break;
+                    }
+                case 2: // V2
+                    {
+                        Color red = C(200, 34, 44), dk = C(40, 30, 44), cy = C(80, 210, 255), st = C(156, 156, 176);
+                        p.Tri(11, 11, 4, 29, 11, 27, C(120, 20, 30));
+                        p.Rect(12, 4, 8, 7, dk); p.Rect(14, 6, 6, 2, cy);
+                        p.Rect(11, 11, 10, 10, red); p.Rect(15, 14, 2, 3, cy); p.Rect(11, 11, 10, 1, C(255, 90, 90));
+                        p.Rect(12, 21, 3, 9, dk); p.Rect(17, 21, 3, 9, dk); p.Rect(11, 29, 5, 3, red); p.Rect(16, 29, 5, 3, red);
+                        p.Rect(8, 12, 3, 8, dk); p.Rect(21, 13, 3, 6, dk); p.Rect(23, 15, 8, 3, st); p.Rect(30, 15, 1, 3, cy);
+                        break;
+                    }
+                default: // Malicious face
+                    {
+                        Color bone = C(228, 222, 202), sh = C(176, 170, 150), blk = C(12, 8, 14), red = C(255, 50, 40);
+                        p.Disc(16, 14, 13, bone); p.Rect(5, 22, 22, 3, sh);
+                        p.Tri(5, 4, 1, 0, 9, 9, bone); p.Tri(27, 4, 31, 0, 23, 9, bone);
+                        p.Rect(8, 9, 6, 7, blk); p.Rect(18, 9, 6, 7, blk); p.Rect(10, 11, 2, 3, red); p.Rect(20, 11, 2, 3, red);
+                        p.Tri(16, 17, 14, 22, 18, 22, blk);
+                        for (int i = 0; i < 5; i++) p.Rect(8 + i * 4, 24, 3, 5, Color.white);
+                        p.Rect(15, 2, 1, 5, sh);
+                        break;
+                    }
+            }
+            p.Outline(C(10, 6, 14));
+            return p.ToSprite(new Vector2(.5f, 0f));
+        }
+
+        // ---------------- enemy / obstacle sprites ----------------
+        public static Sprite CoinSprite()
+        {
+            var p = new Pix(7, 7);
+            p.Disc(3.5f, 3.5f, 3.4f, Hex("#c98a10")); p.Disc(3.5f, 3.5f, 2.6f, Hex("#ffd34d")); p.Rect(3, 2, 1, 3, Hex("#fff3b0"));
+            return p.ToSprite(new Vector2(.5f, .5f));
+        }
+        public static Sprite WalkerSprite()
+        {
+            var p = new Pix(8, 7);
+            Color b = Hex("#b0405e"), d = Hex("#6a2038");
+            p.Rect(1, 1, 6, 5, b); p.Rect(2, 0, 4, 1, b); p.Rect(0, 3, 1, 3, d); p.Rect(7, 3, 1, 3, d);
+            p.Rect(1, 5, 2, 2, d); p.Rect(5, 5, 2, 2, d);
+            p.Rect(4, 2, 2, 2, Color.white); p.Rect(5, 3, 1, 1, Color.black);
+            p.Rect(2, 0, 1, 1, Hex("#ffd0d8")); p.Rect(5, 0, 1, 1, Hex("#ffd0d8"));
+            return p.ToSprite(new Vector2(.5f, .5f));
+        }
+        public static Sprite BatSprite(bool up)
+        {
+            var p = new Pix(12, 7);
+            Color b = Hex("#7a4fc8"), d = Hex("#40236e");
+            p.Rect(4, 2, 4, 4, b); p.Rect(4, 1, 1, 1, b); p.Rect(7, 1, 1, 1, b);
+            if (up) { p.Tri(4, 3, 0, 0, 1, 4, d); p.Tri(8, 3, 12, 0, 11, 4, d); }
+            else { p.Tri(4, 3, 0, 6, 1, 3, d); p.Tri(8, 3, 12, 6, 11, 3, d); }
+            p.Rect(5, 3, 1, 1, Hex("#ff5c7a")); p.Rect(6, 3, 1, 1, Hex("#ff5c7a"));
+            return p.ToSprite(new Vector2(.5f, .5f));
+        }
+        public static Sprite TurretSprite()
+        {
+            var p = new Pix(8, 8);
+            Color b = Hex("#8a8fb8"), d = Hex("#4b4f72");
+            p.Rect(0, 2, 8, 6, b); p.Rect(0, 6, 8, 2, d); p.Rect(0, 3, 3, 2, Color.black); p.Rect(1, 3, 1, 1, Hex("#ff5c3a"));
+            p.Rect(3, 1, 4, 1, d);
+            return p.ToSprite(new Vector2(.5f, .5f));
+        }
+        public static Sprite SawSprite()
+        {
+            var p = new Pix(11, 11);
+            Color m = Hex("#c8ccd8"), d = Hex("#6a6e82");
+            for (int k = 0; k < 8; k++)
+            {
+                float a = k * .7854f;
+                p.Tri(5.5f + Mathf.Cos(a - .3f) * 4, 5.5f + Mathf.Sin(a - .3f) * 4, 5.5f + Mathf.Cos(a) * 5.4f, 5.5f + Mathf.Sin(a) * 5.4f, 5.5f + Mathf.Cos(a + .3f) * 4, 5.5f + Mathf.Sin(a + .3f) * 4, m);
+            }
+            p.Disc(5.5f, 5.5f, 4f, m); p.Disc(5.5f, 5.5f, 1.6f, d);
+            return p.ToSprite(new Vector2(.5f, .5f));
+        }
+        public static Sprite PlatSprite(int wTiles)
+        {
+            var p = new Pix(wTiles * T, 4);
+            p.Rect(0, 0, wTiles * T, 4, Hex("#7e86b8")); p.Rect(0, 0, wTiles * T, 1, Hex("#c8d0ff")); p.Rect(0, 3, wTiles * T, 1, Hex("#4a4f78"));
+            for (int x = 3; x < wTiles * T; x += 8) p.Rect(x, 1, 1, 2, Hex("#4a4f78"));
+            return p.ToSprite(new Vector2(0, 1));
+        }
+        public static Sprite BulletSprite()
+        {
+            var p = new Pix(5, 3);
+            p.Rect(0, 0, 5, 3, Hex("#ff7a3a")); p.Rect(1, 1, 3, 1, Hex("#fff0a0"));
+            return p.ToSprite(new Vector2(.5f, .5f));
+        }
+        public static Sprite CrumbleSprite(Theme th)
+        {
+            var p = new Pix(T, T);
+            Color a = Hex(th.tile[0]), b = Hex(th.tile[2]);
+            p.Rect(0, 0, T, T, a); p.Rect(0, 0, T, 1, Hex(th.tile[1])); p.Rect(0, T - 1, T, 1, b);
+            p.Px(2, 3, b); p.Px(3, 4, b); p.Px(4, 5, b); p.Px(5, 4, b); p.Px(5, 3, b);
+            p.Rect(0, 0, 1, T, new Color(1, 1, 1, .18f)); p.Rect(T - 1, 0, 1, T, new Color(0, 0, 0, .3f));
+            return p.ToSprite(new Vector2(0, 1));
+        }
+        public static Sprite ShrineSprite()
+        {
+            var p = new Pix(14, 22);
+            Color st = Hex("#7e86b8"), dk = Hex("#4a4f78"), gold = Hex("#ffd34d");
+            p.Rect(1, 17, 12, 5, dk); p.Rect(2, 14, 10, 3, st); p.Rect(3, 6, 8, 8, st); p.Rect(3, 6, 8, 1, Hex("#c8d0ff"));
+            p.Rect(4, 8, 6, 4, Hex("#1a1630")); p.Rect(5, 9, 4, 2, gold); p.Rect(6, 9, 2, 1, Hex("#fff3b0"));
+            p.Tri(2, 6, 7, 0, 12, 6, dk);
+            return p.ToSprite(new Vector2(.5f, 0f));
+        }
+
 
         static void Decor(Pix c, Theme th, int x, int y, bool up, bool dn, Color t1, Color t2, Color t3)
         {
